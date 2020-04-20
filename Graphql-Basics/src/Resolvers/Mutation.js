@@ -2,7 +2,7 @@ import uuidv4 from "uuid/v4";
 
 const Mutation = {
   createUser(parent, args, { db }, info) {
-    const emailTaken = db.users.some(user => {
+    const emailTaken = db.users.some((user) => {
       return user.email === args.data.email;
     });
     if (emailTaken) {
@@ -10,45 +10,47 @@ const Mutation = {
     }
     const user = {
       id: uuidv4(),
-      ...args.data
+      ...args.data,
     };
     db.users.push(user);
     return user;
   },
+
   deleteUser(parent, args, { db }, info) {
     //here i am using findIndex instead of some because by finding index it also helps in deleting it
-    const userIndex = db.users.findIndex(user => {
+    const userIndex = db.users.findIndex((user) => {
       return user.id === args.id;
     });
     if (userIndex === -1) {
       throw new Error("User does not exist");
     }
 
-    const deletedUser = db.users.splice(userIndex, 1);
+    const deletedUsers = db.users.splice(userIndex, 1);
 
-    db.posts = db.posts.filter(post => {
+    db.posts = db.posts.filter((post) => {
       const match = args.id === post.author;
       if (match) {
-        db.comments.filter(comment => {
+        db.comments = db.comments.filter((comment) => {
           return !comment.post === post.id;
         });
       }
       return !match;
     });
-    db.comments.filter(comment => {
+    db.comments = db.comments.filter((comment) => {
       return !comment.user === args.id;
     });
-    return deletedUser[0];
+    return deletedUsers[0];
   },
+
   updateUser(parent, args, { db }, info) {
-    const updateuser = db.users.find(user => {
+    const updateuser = db.users.find((user) => {
       return user.id === args.id;
     });
     if (!updateuser) {
-      throw new Error("User does not existm");
+      throw new Error("User does not exist");
     }
     if (typeof args.data.email === "string") {
-      const emailTaken = db.users.some(user => {
+      const emailTaken = db.users.some((user) => {
         return user.email === args.data.email;
       });
       if (emailTaken) {
@@ -64,8 +66,9 @@ const Mutation = {
     }
     return updateuser;
   },
+
   createPost(parent, args, { db }, info) {
-    const UserExists = db.users.some(user => {
+    const UserExists = db.users.some((user) => {
       return user.id === args.data.author;
     });
     if (!UserExists) {
@@ -73,16 +76,31 @@ const Mutation = {
     }
     const post = {
       id: uuidv4(),
-      ...args.data
+      ...args.data,
     };
     db.posts.push(post);
     return post;
   },
+
+  deletePost(parent, args, { db }, info) {
+    const postIndex = db.posts.findIndex((post) => {
+      return post.id === args.id;
+    });
+    if (postIndex === -1) {
+      throw new Error("Post does not exists");
+    }
+    const deletedPosts = db.posts.splice(postIndex, 1);
+    db.comments = db.comments.filter((comment) => {
+      return comment.post !== args.id;
+    });
+    return deletedPosts[0];
+  },
+
   createComment(parent, args, { db }, info) {
-    const UserExists = db.users.some(user => {
+    const UserExists = db.users.some((user) => {
       return user.id === args.data.author;
     });
-    const PostExists = posts.some(post => {
+    const PostExists = posts.some((post) => {
       return post.id === args.data.post && args.data.published;
     });
     if (!PostExists || !UserExists) {
@@ -90,10 +108,21 @@ const Mutation = {
     }
     const comment = {
       id: uuidv4(),
-      ...args.data
+      ...args.data,
     };
     db.comments.push(comment);
     return comment;
-  }
+  },
+
+  deleteComment(parent, args, { db }, info) {
+    const commentIndex = db.comments.findIndex(
+      (comment) => comment.id === args.id
+    );
+    if (commentIndex === -1) {
+      throw new Error("Comment does not exists!");
+    }
+    const deletedComment = db.comments.splice(commentIndex, 1);
+    return deletedComment[0];
+  },
 };
 export default Mutation;

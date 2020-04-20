@@ -1,7 +1,7 @@
 const Query = {
   users(parent, args, { db }, info) {
     if (!args.search) return db.users;
-    return db.users.filter(user => {
+    return db.users.filter((user) => {
       return user.name.toLowerCase().includes(args.search.toLowerCase());
     });
   },
@@ -9,7 +9,7 @@ const Query = {
     return db.posts;
   },
   comments(parent, args, { db }, info) {
-    returndb.comments;
-  }
+    return db.comments;
+  },
 };
 export default Query;
